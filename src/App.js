@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import personsServices from './services/persons';
 import Search from "./components/Search";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
+import Notification from "./components/Notification";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    {
-      name: "Arto Hellas",
-      number: "39-44-5323523"
-    }
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newSearch, setNewSearch] = useState("");
+  const [message, setMessage] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  useEffect(() => {
+    personsServices
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons);
+      });
+  }, []);
+
+  const handleDeleteName = (id, name) => {
+    if(window.confirm(`Delete ${name}?`)){
+        personsServices
+            .del(id)
+            .then(() => {
+              setMessage(`Deleted ${name}`);
+              setStatus('success');
+              setTimeout(() => {
+                setMessage(null);
+                setStatus(null);
+              }, 3000);
+              setPersons(persons.filter(p => p.id !== id));
+            });
+    }
+  };
 
   const resultsToShow = newSearch === "" 
     ? persons 
@@ -18,12 +41,13 @@ const App = () => {
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
+      <Notification message={message} status={status}/>
       <Search newSearch={newSearch} setNewSearch={setNewSearch}/>
-      <h2>Add a New Person</h2>
-      <PersonForm persons={persons} setPersons={setPersons}/>
-      <h2>Numbers</h2>
-      <Persons persons={resultsToShow}/>
+      <h1>Add a New Person</h1>
+      <PersonForm persons={persons} setPersons={setPersons} setMessage={setMessage} setStatus={setStatus}/>
+      <h1>Numbers</h1>
+      <Persons persons={resultsToShow} handleDeleteName={handleDeleteName}/>
     </div>
   );
 }
