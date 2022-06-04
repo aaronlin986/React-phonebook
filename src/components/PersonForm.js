@@ -68,6 +68,14 @@ const PersonForm = ({persons, setPersons, setMessage, setStatus}) => {
           setPersons(persons.concat(returnedPerson));
           setNewName("");
           setNewNumber("");
+        })
+        .catch(error => {
+          setMessage(`${error.response.data.error}`);
+          setStatus('error');
+          setTimeout(() => {
+            setMessage(null);
+            setStatus(null);
+          }, 3000);
         });
     }
     
